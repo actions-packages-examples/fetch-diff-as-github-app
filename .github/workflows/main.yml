@@ -1,0 +1,28 @@
+name: Main
+
+on: watch
+
+env:
+  TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  build:
+    # GUARD: Run this job only if `francisfuzz` watches (stars) the repository.
+    if: github.actor == 'francisfuzz'
+
+    runs-on: ubuntu-latest
+    steps:
+    
+    # https://docs.github.com/en/rest/reference/repos#compare-two-commits
+    - name: Request without preview header
+      run: |
+        curl -v -H "Authorization: token $TOKEN" "https://api.github.com/repos/${{ github.repository }}/compare/master...target"
+
+    # https://docs.github.com/en/rest/overview/media-types#commits-commit-comparison-and-pull-requests
+    - name: Request with diff custom media type (v3)
+      run: |
+        curl -v -H "Authorization: token $TOKEN" -H "Accept: application/vnd.github.v3.diff" "https://api.github.com/repos/${{ github.repository }}/compare/master...target"
+
+    - name: Request with diff custom media type (machine-man-preview)
+      run: |
+        curl -v -H "Authorization: token $TOKEN" -H "Accept: application/vnd.github.machine-man-preview.diff" "https://api.github.com/repos/${{ github.repository }}/compare/master...target"
